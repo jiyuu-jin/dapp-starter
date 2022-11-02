@@ -1,0 +1,28 @@
+name: Valist Publish
+jobs:
+  valist-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '^1.13.1'
+      
+      - name: Build Go Project
+        run: |
+	        GOOS=windows GOARCH=amd64 go build -o ./dist/windows-amd64 src/main.go
+	        GOOS=linux GOARCH=amd64 go build -o ./dist/linux-amd64 src/main.go
+	        GOOS=darwin GOARCH=amd64 go build -o ./dist/darwin-amd64 src/main.go
+	        GOOS=darwin GOARCH=arm64 go build -o ./dist/darwin-arm64 src/main.go
+
+      - name: Valist Publish
+        uses: valist-io/valist-github-action@v2.3.1
+        with:
+          private-key: ${{ secrets.VALIST_SIGNER }}
+          account: jiyuu-jin
+          project: dapp-starter
+          release: ${{ env.TIMESTAMP }}
+          path: dist
